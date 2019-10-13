@@ -2,14 +2,12 @@ class TicTacToe {
     constructor() {
         this.chosenSymbol = 'x';
         this.winner = null;
-        this.currentTurn = 0;
-        this.finished = false;
         this.playfield = [
             [null, null, null],
             [null, null, null],
             [null, null, null]
         ];
-        this.actualWinConditions = [
+        this.winConditions = [
             [0,0,0,1,0,2],
             [1,0,1,1,1,2],
             [0,0,1,0,2,0],
@@ -32,16 +30,21 @@ class TicTacToe {
     }
 
     checkWinConditions() {
-            this.actualWinConditions.forEach(element => {
+            this.winConditions.forEach(element => {
               const trans = this.transformCondition(element);
-              if (trans.every(x => x === this.chosenSymbol)) {
-                this.finished = true;
-                this.winner = this.chosenSymbol;
+              if (trans.every(x => x === 'x')) {
+                this.winner = 'x';
+                return;
+              }
+
+              if (trans.every(x => x === 'o')) {
+                this.winner = 'o';
+                return;
               }
             });
-          }
+    }
 
-    adressExists(rowIndex, cellIndex) {
+/*     adressExists(rowIndex, cellIndex) {
         if (rowIndex > 2 || rowIndex < 0 || cellIndex > 2 || cellIndex < 0){
             return false;
           }
@@ -50,50 +53,62 @@ class TicTacToe {
 
     adressUsed(rowIndex, cellIndex) {
         return this.playfield[rowIndex][cellIndex] !== null ? true: false;
-    }
+    } */
 
     fieldIsFull() {
-           const pf = this.playfield,
-          resArr = [];
-          for (let i = 0; i < 3; i++) {
-            resArr.push(pf[i][0]);
-            resArr.push(pf[i][1]);
-            resArr.push(pf[i][2]);
+          let filledCells = 0;
+
+          for(let row of this.playfield) {
+
+            for(let cell of row) {
+                if (cell !== null) filledCells++;
+            }
+
           }
-          return resArr.every(x => {
-            return x !== null;
-          });
+
+          return filledCells === 9 ? true : false;
     } 
+
+    toggleSymbol() {
+        if(this.chosenSymbol === 'x') {
+            this.chosenSymbol = 'o';
+        } else {
+            this.chosenSymbol = 'x';
+        }
+    }
 
     getCurrentPlayerSymbol() {
         return this.chosenSymbol;
     }
 
     nextTurn(rowIndex, columnIndex) {
-        if(!this.adressUsed(rowIndex, columnIndex) && !this.isFinished() && this.adressExists(rowIndex, columnIndex)) {
-            this.playfield[rowIndex][columnIndex] = this.chosenSymbol;
-            this.currentTurn++;
-            this.checkWinConditions();
-            if(!this.isFinished()) {
-                this.chosenSymbol = this.chosenSymbol === 'x' ? 'o' : 'x';
+        /* if(!this.adressUsed(rowIndex, columnIndex) && this.adressExists(rowIndex, columnIndex)) { */
+            if (this.playfield[rowIndex][columnIndex] === null) {
+                this.playfield[rowIndex][columnIndex] = this.chosenSymbol;
+                this.toggleSymbol();
             }
-        }
+
+
+        /* } */
     }
 
+// Changed to computed property
     isFinished() {
-        return this.finished;
+        return (this.getWinner() || this.isDraw());
     }
 
     getWinner() {
+        this.winner = null;
+        this.checkWinConditions();
         return this.winner;
     }
 
     noMoreTurns() {
-        return this.currentTurn === 9 ? true : false;
+        return this.fieldIsFull() ? true : false;
     }
 
     isDraw() {
-        return ((this.finished === true) && (this.winner === null)) ? true : false;
+        return (this.noMoreTurns() && (this.getWinner() === null)) ? true : false;
     }
 
     getFieldValue(rowIndex, colIndex) {
